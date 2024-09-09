@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model menu {
+  idMenu      Int         @id @default(autoincrement())
+  uuid        String      @unique
+  name        String
+  description String      @db.Text
+  price       Float
+  category    Category
+  image       String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderLists  orderList[]
+}
+
+model user {
+  idUser          Int      @id @default(autoincrement())
+  uuid            String   @unique
+  email           String   @unique
+  password        String
+  name            String?
+  role            Role     @default(CASHIER)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  profilePictutre String   @db.VarChar(255)
+  orders          order[]
+}
+
+model order {
+  idOrder        Int           @id @default(autoincrement())
+  uuid           String        @unique
+  idUser         Int
+  customer       String
+  total_price    Float
+  table_number   Int
+  status         OrderStatus   @default(NEW)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           user          @relation(fields: [idUser], references: [idUser])
+  orderLists     orderList[]
+  payment_method PaymentMethod
+}
+
+model orderList {
+  idOrderList Int      @id @default(autoincrement())
+  uuid        String   @unique
+  idMenu      Int
+  idOrder     Int
+  quantity    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  note        String?  @db.Text
+  menu        menu?    @relation(fields: [idMenu], references: [idMenu])
+  order       order?   @relation(fields: [idOrder], references: [idOrder])
+}
+
+enum Category {
+  FOOD
+  DRINK
+  SNACK
+}
+
+enum Role {
+  MANAGER
+  CASHIER
+}
+
+enum OrderStatus {
+  NEW
+  PAID
+  DONE
+}
+
+enum PaymentMethod {
+  CASH
+  QRIS
+}
