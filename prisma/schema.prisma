@@ -27,16 +27,16 @@ model menu {
 }
 
 model user {
-  idUser          Int      @id @default(autoincrement())
-  uuid            String   @unique
-  email           String   @unique
-  password        String
-  name            String?
-  role            Role     @default(CASHIER)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  profilePictutre String   @db.VarChar(255)
-  orders          order[]
+  idUser         Int      @id @default(autoincrement())
+  uuid           String   @unique
+  email          String   @unique
+  password       String
+  name           String?
+  role           Role     @default(CASHIER)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  profilePicture String?  @db.VarChar(255)
+  orders         order[]
 }
 
 model order {
