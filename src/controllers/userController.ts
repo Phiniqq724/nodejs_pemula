@@ -2,8 +2,9 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
-import { BASE_URL } from "../global";
-import path from "path";
+import { BASE_URL, SECRET_KEY } from "../global";
+import md5 from "md5";
+import { sign } from "jsonwebtoken";
 
 const prisma = new PrismaClient({ errorFormat: "pretty" });
 
@@ -61,7 +62,7 @@ export const createUser = async (request: Request, response: Response) => {
         uuid,
         name,
         email,
-        password,
+        password: md5(password),
         role,
       },
     });
@@ -167,6 +168,50 @@ export const profileUser = async (request: Request, response: Response) => {
   } catch (error) {
     return response
       .json({ status: false, message: `There is an error. ${error}` })
+      .status(400);
+  }
+};
+
+export const authentication = async (request: Request, response: Response) => {
+  try {
+    const { email, password } = request.body;
+    const findUser = await prisma.user.findFirst({
+      where: { email, password: md5(password) },
+    });
+    if (!findUser) {
+      return response.status(200).json({
+        status: false,
+        logged: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    let data = {
+      idUser: findUser.idUser,
+      name: findUser.name,
+      email: findUser.email,
+      role: findUser.role,
+    };
+
+    let payLoad = JSON.stringify(data);
+
+    const token = sign(payLoad, SECRET_KEY || "token");
+
+    return response
+      .json({
+        status: true,
+        logged: true,
+        data: { ...findUser, token },
+        message: "User has logged in successfully",
+      })
+      .status(200);
+  } catch (error) {
+    return response
+      .json({
+        status: false,
+        logged: false,
+        message: `There is an error. ${error}`,
+      })
       .status(400);
   }
 };

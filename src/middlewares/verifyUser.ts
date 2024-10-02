@@ -4,14 +4,14 @@ import { Request, Response, NextFunction } from "express";
 const addDataSchema = Joi.object({
   email: Joi.string().email().required(),
   name: Joi.string().required(),
-  password: Joi.string().min(8).required(),
+  password: Joi.string().min(8).required().alphanum(),
   role: Joi.string().valid("MANAGER", "CASHIER").optional(),
 });
 
 const editDataSchema = Joi.object({
   email: Joi.string().email().optional(),
   name: Joi.string().optional(),
-  password: Joi.string().min(8).optional(),
+  password: Joi.string().min(8).optional().alphanum(),
   role: Joi.string().valid("MANAGER", "CASHIER").optional(),
 });
 
