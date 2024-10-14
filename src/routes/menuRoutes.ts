@@ -9,15 +9,32 @@ import {
 } from "../controllers/menuController";
 import { verifyAddMenu, verifyEditMenu } from "../middlewares/verifyMenu";
 import uploadFile from "../middlewares/verifyUpload";
+import { verifyToken, verifyRole } from "../middlewares/authorization";
 
 const app = express();
 app.use(express.json());
 
-app.get("/", getMenu);
-app.get("/:idMenu", getMenuID);
-app.post("/", [verifyAddMenu], createMenu);
-app.put("/:idMenu", [verifyEditMenu], updateMenu);
-app.delete("/:idMenu", deleteMenu);
-app.put("/pic/:idMenu", [uploadFile.single("Picture")], changePicture);
+app.get("/", [verifyToken, verifyRole(["CASHIER", "MANAGER"])], getMenu);
+app.get(
+  "/:idMenu",
+  [verifyToken, verifyRole(["MANAGER", "CASHIER"])],
+  getMenuID
+);
+app.post(
+  "/",
+  [verifyAddMenu, verifyToken, verifyRole(["MANAGER"])],
+  createMenu
+);
+app.put(
+  "/:idMenu",
+  [verifyEditMenu, verifyToken, verifyRole(["MANAGER"])],
+  updateMenu
+);
+app.delete("/:idMenu", [verifyToken, verifyRole(["MANAGER"])], deleteMenu);
+app.put(
+  "/pic/:idMenu",
+  [uploadFile.single("Picture"), verifyToken, verifyRole(["MANAGER"])],
+  changePicture
+);
 
 export default app;

@@ -215,3 +215,45 @@ export const authentication = async (request: Request, response: Response) => {
       .status(400);
   }
 };
+
+export const authAtha = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    const findUser = await prisma.user.findFirst({
+      where: { email, password: md5(password) },
+    });
+
+    if (!findUser)
+      return res.status(200).json({
+        status: false,
+        logged: false,
+        message: "Email or password is invalid",
+      });
+
+    let data = {
+      id: findUser.idUser,
+      name: findUser.name,
+      email: findUser.email,
+      role: findUser.role,
+    };
+
+    //menyiapkan data yang akan dibuat jadi token
+    //stringify untuk menjadikan objek menjadi string
+    let payload = JSON.stringify(data);
+
+    let token = sign(payload, SECRET_KEY || "token");
+    //sign utk generate token
+
+    return res
+      .status(200)
+      .json({ status: true, logged: true, message: "login sukses", token });
+  } catch (error) {
+    return res
+      .json({
+        status: false,
+        message: `Error ${error}`,
+      })
+      .status(400);
+  }
+};
