@@ -55,6 +55,16 @@ export const createMenu = async (request: Request, response: Response) => {
   try {
     const { name, price, category, description } = request.body;
     const uuid = uuidv4();
+
+    // Initialize filename for the uploaded image if exists
+    let filename = "";
+
+    // Check if a file was uploaded
+    if (request.file) {
+      filename = request.file.filename;
+    }
+
+    // Create a new menu item with the image filename if available
     const newMenu = await prisma.menu.create({
       data: {
         uuid,
@@ -62,54 +72,19 @@ export const createMenu = async (request: Request, response: Response) => {
         price: Number(price),
         category,
         description,
+        image: filename, // Save the image path
       },
     });
 
-    return response
-      .json({
-        status: true,
-        data: newMenu,
-        message: "Menu has created successfully",
-      })
-      .status(201);
+    return response.status(201).json({
+      status: true,
+      data: newMenu,
+      message: "Menu has been created successfully",
+    });
   } catch (error) {
     return response
-      .json({ status: false, message: `There is an error. ${error}` })
-      .status(400);
-  }
-};
-
-export const updateMenu = async (request: Request, response: Response) => {
-  try {
-    const { idMenu } = request.params;
-    const { name, price, category, description } = request.body;
-    const findMenu = await prisma.menu.findFirst({
-      where: { idMenu: Number(idMenu) },
-    });
-    if (!findMenu) {
-      return response.json({ status: false, message: "Menu not found" });
-    }
-    const updatedMenu = await prisma.menu.update({
-      where: { idMenu: Number(idMenu) },
-      data: {
-        name: name || findMenu.name,
-        price: Number(price) ? price : findMenu.price,
-        category: category || findMenu.category,
-        description: description || findMenu.description,
-      },
-    });
-
-    return response
-      .json({
-        status: true,
-        data: updatedMenu,
-        message: "Menu has updated successfully",
-      })
-      .status(200);
-  } catch (error) {
-    return response
-      .json({ status: false, message: `There is an error. ${error}` })
-      .status(400);
+      .status(400)
+      .json({ status: false, message: `There is an error. ${error}` });
   }
 };
 
@@ -145,9 +120,10 @@ export const deleteMenu = async (request: Request, response: Response) => {
   }
 };
 
-export const changePicture = async (request: Request, response: Response) => {
+export const updateMenu = async (request: Request, response: Response) => {
   try {
     const { idMenu } = request.params;
+    const { name, price, category, description } = request.body;
     const findMenu = await prisma.menu.findFirst({
       where: { idMenu: Number(idMenu) },
     });
@@ -170,6 +146,10 @@ export const changePicture = async (request: Request, response: Response) => {
       where: { idMenu: Number(idMenu) },
       data: {
         image: filename,
+        name: name || findMenu.name,
+        price: Number(price) ? Number(price) : findMenu.price,
+        category: category || findMenu.category,
+        description: description || findMenu.description,
       },
     });
 

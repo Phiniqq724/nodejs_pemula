@@ -42,14 +42,14 @@ model user {
 model order {
   idOrder        Int           @id @default(autoincrement())
   uuid           String        @unique
-  idUser         Int
+  idUser         Int?
   customer       String
   total_price    Float
   table_number   Int
   status         OrderStatus   @default(NEW)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
-  user           user          @relation(fields: [idUser], references: [idUser])
+  user           user?         @relation(fields: [idUser], references: [idUser])
   orderLists     orderList[]
   payment_method PaymentMethod
 }

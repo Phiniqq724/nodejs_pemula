@@ -5,7 +5,6 @@ import {
   getMenuID,
   updateMenu,
   deleteMenu,
-  changePicture,
 } from "../controllers/menuController";
 import { verifyAddMenu, verifyEditMenu } from "../middlewares/verifyMenu";
 import uploadFile from "../middlewares/verifyUpload";
@@ -22,19 +21,24 @@ app.get(
 );
 app.post(
   "/",
-  [verifyAddMenu, verifyToken, verifyRole(["MANAGER"])],
+  [
+    verifyToken,
+    verifyRole(["MANAGER"]),
+    uploadFile.single("picture"),
+    verifyAddMenu,
+  ],
   createMenu
 );
 app.put(
   "/:idMenu",
-  [verifyEditMenu, verifyToken, verifyRole(["MANAGER"])],
+  [
+    verifyToken,
+    verifyRole(["MANAGER"]),
+    uploadFile.single("picture"),
+    verifyEditMenu,
+  ],
   updateMenu
 );
 app.delete("/:idMenu", [verifyToken, verifyRole(["MANAGER"])], deleteMenu);
-app.put(
-  "/pic/:idMenu",
-  [uploadFile.single("Picture"), verifyToken, verifyRole(["MANAGER"])],
-  changePicture
-);
 
 export default app;
